@@ -66,17 +66,19 @@ CREATE TABLE comentarios(
     id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT NOT NULL,
     idComentario INT NOT NULL,
     comentario TEXT NOT NULL,
+    responsavelId INT NOT NULL,
     numeroCurtidas INT,
     numeroDeslikes INT,
     dataCriacao TEXT NOT NULL,
     FOREIGN KEY(idComentario) REFERENCES posts(id)
+    FOREIGN KEY(responsavelId) REFERENCES users(id)
 );
 
 
-INSERT INTO comentarios( idComentario, comentario, numeroCurtidas, numeroDeslikes, dataCriacao) 
+INSERT INTO comentarios( idComentario, comentario, responsavelId, numeroCurtidas, numeroDeslikes, dataCriacao) 
 VALUES
-(2, 'Oi para vc também', 25, 30, CURRENT_TIMESTAMP),
-(1, 'Você está certo',9021, 80, CURRENT_TIMESTAMP)
+(2, 'Oi para vc também',2, 25, 30, CURRENT_TIMESTAMP),
+(1, 'Você está certo',1, 9021, 80, CURRENT_TIMESTAMP)
 
 
 SELECT * FROM comentarios
