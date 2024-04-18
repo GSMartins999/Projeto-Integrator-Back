@@ -132,38 +132,34 @@ app.post("/posts", async (req, res) => {
   try {
     const { id, description, responsavelId, numeroCurtidas, numeroDeslikes, numeroComentarios } = req.body;
 
-    // Verifica se todos os atributos necessários estão presentes no corpo da requisição
     if (description === undefined || responsavelId === undefined) {
       res.status(400).send("O body precisa ter todos esses atributos: 'id', 'description', 'responsavelId'");
       return;
     }
 
-    // Validação do tipo de dados do campo 'description'
     if (typeof description !== "string") {
       res.status(400).send("O 'description' do usuário deve ser uma string");
       return;
     }
 
-    // Validação do tamanho mínimo do campo 'description'
     if (description.length < 1) {
       res.status(400).send("O 'description' do usuário deve conter no mínimo 1 caracter");
       return;
     }
 
-    // Validação do tipo de dados do campo 'responsavelId'
     if (typeof responsavelId !== "number") {
       res.status(400).send("O 'responsavelId' do usuário deve ser uma 'number'");
       return;
     }
 
-    // Insere o novo post na tabela 'posts' do banco de dados
+    // Insere o novo post na tabela 
     await db("posts").insert({
       id: id,
       description: description,
       responsavelId: responsavelId,
-      numeroCurtidas: numeroCurtidas || 0, // Valor padrão de 0 se não for fornecido
-      numeroDeslikes: numeroDeslikes || 0, // Valor padrão de 0 se não for fornecido
-      numeroComentarios: numeroComentarios || 0, // Valor padrão de 0 se não for fornecido
+      numeroCurtidas: numeroCurtidas || 0,
+      numeroDeslikes: numeroDeslikes || 0, 
+      numeroComentarios: numeroComentarios || 0, 
       dataCriacao: new Date().toISOString()
     });
 
@@ -197,10 +193,7 @@ app.get("/posts", async (req: Request, res: Response) => {
 });
 
 
-
-
 //Comentando Outros Posts
-
 
 app.post("/posts/:postId/comentarios", async (req: Request, res: Response) => {
   try {
@@ -211,21 +204,19 @@ app.post("/posts/:postId/comentarios", async (req: Request, res: Response) => {
       return res.status(400).send("O ID do post é obrigatório.");
     }
 
-    // Insere o novo comentário na tabela 'comentarios' do banco de dados
+    // Insere o novo comentário na tabela
     await db("comentarios").insert({
-      idComentario: postId,
+      idPost: postId,
       comentario: comentario,
       responsavelId: responsavelId,
-      numeroCurtidas: numeroCurtidas || 0, // Valor padrão de 0 se não for fornecido
-      numeroDeslikes: numeroDeslikes || 0, // Valor padrão de 0 se não for fornecido
+      numeroCurtidas: numeroCurtidas || 0,
+      numeroDeslikes: numeroDeslikes || 0, 
       dataCriacao: new Date().toISOString()
     });
 
-    // Retorna uma resposta de sucesso
     res.status(201).send("Comentário adicionado com sucesso!");
   } catch (error) {
     console.error("Erro:", error);
-    // Retorna uma resposta de erro caso ocorra algum problema
     res.status(500).send("Erro inesperado.");
   }
 });
@@ -246,5 +237,32 @@ app.get("/comentarios", async (req: Request, res: Response) => {
     } else {
       res.send("Erro inesperado.");
     }
+  }
+});
+
+
+//Deletando Comentários
+
+app.delete("/posts/:postId/comentarios/:comentarioId", async (req, res) => {
+  try {
+    //transformando o id em number e basando sua base para decimal(definimos a base para não ter erros no futuro)
+    const postId = parseInt(req.params.postId, 10);
+    const comentarioId = parseInt(req.params.comentarioId, 10);
+
+    if (isNaN(postId) || isNaN(comentarioId)) {
+      return res.status(400).send("IDs de post e comentário devem ser números inteiros válidos.");
+    }
+
+    const postExists = await db("posts").where({ id: postId }).first();
+    if (!postExists) {
+      return res.status(404).send("O post não foi encontrado.");
+    }
+
+    await db("comentarios").where({ id: comentarioId, idPost: postId }).del();
+
+    res.status(200).send("Comentário deletado com sucesso.");
+  } catch (error) {
+    console.error("Erro:", error);
+    res.status(500).send("Erro ao deletar o comentário.");
   }
 });
