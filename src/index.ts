@@ -1,6 +1,6 @@
 import express, { Request, Response} from 'express';
 import cors from 'cors';
-import { TUser } from './types';
+import { TComentarios, TPosts, TUser } from './types';
 import { db } from './database/knex';
 
 const app = express();
@@ -26,6 +26,7 @@ function generateToken(user: TUser): string {
   //definindo o tempo do token:
   return jwt.sign(payload, 'sua_chave_secreta', { expiresIn: '1h' }); 
 }
+
 
 // Login do usuário
 app.post("/login", async (req: Request, res: Response) => {
@@ -55,6 +56,7 @@ app.post("/login", async (req: Request, res: Response) => {
   }
 });
 
+
 // Pegando todos os usuários
 app.get("/users", async (req: Request, res: Response) => {
   try {
@@ -72,6 +74,7 @@ app.get("/users", async (req: Request, res: Response) => {
     }
   }
 });
+
 
 // Criando um novo usuário
 app.post("/users", async (req: Request, res: Response) => {
@@ -108,6 +111,132 @@ app.post("/users", async (req: Request, res: Response) => {
 
     await db("users").insert(newUser);
     res.status(201).send("Cadastro do usuário realizado com sucesso!");
+  } catch (error) {
+    if (res.statusCode === 200) {
+      res.status(500);
+    }
+    if (error instanceof Error) {
+      res.send(error.message);
+    } else {
+      res.send("Erro inesperado.");
+    }
+  }
+});
+
+
+
+//Criando um novo post
+
+
+app.post("/posts", async (req, res) => {
+  try {
+    const { id, description, responsavelId, numeroCurtidas, numeroDeslikes, numeroComentarios } = req.body;
+
+    // Verifica se todos os atributos necessários estão presentes no corpo da requisição
+    if (description === undefined || responsavelId === undefined) {
+      res.status(400).send("O body precisa ter todos esses atributos: 'id', 'description', 'responsavelId'");
+      return;
+    }
+
+    // Validação do tipo de dados do campo 'description'
+    if (typeof description !== "string") {
+      res.status(400).send("O 'description' do usuário deve ser uma string");
+      return;
+    }
+
+    // Validação do tamanho mínimo do campo 'description'
+    if (description.length < 1) {
+      res.status(400).send("O 'description' do usuário deve conter no mínimo 1 caracter");
+      return;
+    }
+
+    // Validação do tipo de dados do campo 'responsavelId'
+    if (typeof responsavelId !== "number") {
+      res.status(400).send("O 'responsavelId' do usuário deve ser uma 'number'");
+      return;
+    }
+
+    // Insere o novo post na tabela 'posts' do banco de dados
+    await db("posts").insert({
+      id: id,
+      description: description,
+      responsavelId: responsavelId,
+      numeroCurtidas: numeroCurtidas || 0, // Valor padrão de 0 se não for fornecido
+      numeroDeslikes: numeroDeslikes || 0, // Valor padrão de 0 se não for fornecido
+      numeroComentarios: numeroComentarios || 0, // Valor padrão de 0 se não for fornecido
+      dataCriacao: new Date().toISOString()
+    });
+
+    // Retorna uma resposta de sucesso
+    res.status(201).send("Post do usuário realizado com sucesso!");
+  } catch (error) {
+    console.error("Erro:", error);
+    // Retorna uma resposta de erro caso ocorra algum problema
+    res.status(500).send("Erro inesperado.");
+  }
+});
+
+
+
+//Pegando os Posts
+
+app.get("/posts", async (req: Request, res: Response) => {
+  try {
+    const user_posts: TPosts[] = await db.select().from("posts");
+    res.status(200).send(user_posts);
+  } catch (error) {
+    if (res.statusCode === 200) {
+      res.status(500);
+    }
+    if (error instanceof Error) {
+      res.send(error.message);
+    } else {
+      res.send("Erro inesperado.");
+    }
+  }
+});
+
+
+
+
+//Comentando Outros Posts
+
+
+app.post("/posts/:postId/comentarios", async (req: Request, res: Response) => {
+  try {
+    const postId = req.params.postId;
+    const { comentario, responsavelId, numeroCurtidas, numeroDeslikes } = req.body;
+
+    if (!postId) {
+      return res.status(400).send("O ID do post é obrigatório.");
+    }
+
+    // Insere o novo comentário na tabela 'comentarios' do banco de dados
+    await db("comentarios").insert({
+      idComentario: postId,
+      comentario: comentario,
+      responsavelId: responsavelId,
+      numeroCurtidas: numeroCurtidas || 0, // Valor padrão de 0 se não for fornecido
+      numeroDeslikes: numeroDeslikes || 0, // Valor padrão de 0 se não for fornecido
+      dataCriacao: new Date().toISOString()
+    });
+
+    // Retorna uma resposta de sucesso
+    res.status(201).send("Comentário adicionado com sucesso!");
+  } catch (error) {
+    console.error("Erro:", error);
+    // Retorna uma resposta de erro caso ocorra algum problema
+    res.status(500).send("Erro inesperado.");
+  }
+});
+
+
+//Pegando os comentarios
+
+app.get("/comentarios", async (req: Request, res: Response) => {
+  try {
+    const user_comentarios: TComentarios[] = await db.select().from("comentarios");
+    res.status(200).send(user_comentarios);
   } catch (error) {
     if (res.statusCode === 200) {
       res.status(500);
