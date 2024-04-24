@@ -349,6 +349,7 @@ app.get("/posts/:postId/comentarios", async (req, res) => {
     if (comentarios.length === 0) {
       return res.status(404).send("Não há comentários para o post fornecido.");
     }
+
     res.status(200).json(comentarios);
   } catch (error) {
     console.error("Erro ao obter comentários:", error);
