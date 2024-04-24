@@ -82,3 +82,49 @@ VALUES
 
 
 SELECT * FROM comentarios
+
+--------------------------------------------
+DROP TABLE likes;
+
+CREATE TABLE likes(
+    id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT NOT NULL,
+    idPost INT NOT NULL,
+    idUser INT NOT NULL,
+    dataCurtidas TEXT NOT NULL,
+    FOREIGN KEY (idPost) REFERENCES posts(id),
+    FOREIGN KEY (idUser) REFERENCES users(id)
+);
+
+
+
+---------------------------------------------
+DROP TABLE deslikes;
+
+
+CREATE TABLE deslikes(
+    id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT NOT NULL,
+    idPost INT NOT NULL,
+    idUser INT NOT NULL,
+    dataCurtidas TEXT NOT NULL,
+    FOREIGN KEY (idPost) REFERENCES posts(id),
+    FOREIGN KEY (idUser) REFERENCES users(id)
+);
+
+SELECT * FROM deslikes
+
+
+
+------------------------------------------------
+
+
+DROP TABLE numComentarios;
+
+
+CREATE TABLE numComentarios(
+    id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT NOT NULL,
+    idPost INT NOT NULL,
+    quantidade INT NOT NULL,
+    FOREIGN KEY (idPost) REFERENCES posts(id)
+);
+
+SELECT * FROM numComentarios
