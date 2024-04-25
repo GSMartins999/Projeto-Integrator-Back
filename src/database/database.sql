@@ -128,3 +128,14 @@ CREATE TABLE numComentarios(
 );
 
 SELECT * FROM numComentarios
+
+
+-- Tabela de Ações (likes e deslikes)
+CREATE TABLE actions (
+    id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT NOT NULL,
+    postId INTEGER NOT NULL,
+    userId INTEGER NOT NULL,
+    action TEXT NOT NULL,
+    FOREIGN KEY (postId) REFERENCES posts(id),
+    FOREIGN KEY (userId) REFERENCES users(id)
+);

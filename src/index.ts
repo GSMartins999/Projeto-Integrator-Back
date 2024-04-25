@@ -193,26 +193,17 @@ app.get("/posts", async (req, res) => {
     }
 });
 
-//Curtir um post
+// Curtir um post
 app.post("/posts/:postId/likes", async (req, res) => {
     try {
         const postId = Number(req.params.postId);
         const userId = Number(req.body.userId); // Vem do token do usuário logado
 
-        // Verificar se o usuário já curtiu o post
-        const existingLike = await db('likes').where({ postId, userId }).first();
-        if (existingLike) {
-            return res.status(400).send('O usuário já curtiu este post.');
-        }
-
+        // Adicionar a curtida sem verificar se já existe
         await db("likes").insert({ postId, userId });
 
-        const post = await db("posts").where({ id: postId }).first();
-        if (!post) {
-            return res.status(404).send("Post não encontrado.");
-        }
-
-        await db("posts").where({ id: postId }).update({ numeroCurtidas: post.numeroCurtidas + 1 });
+        // Atualizar o número de curtidas no post
+        await db("posts").where({ id: postId }).increment("numeroCurtidas", 1);
 
         res.status(200).send("Post curtido com sucesso!");
     } catch (error) {
@@ -221,26 +212,17 @@ app.post("/posts/:postId/likes", async (req, res) => {
     }
 });
 
-//Descurtir um post
+// Descurtir um post
 app.post("/posts/:postId/deslikes", async (req, res) => {
     try {
         const postId = Number(req.params.postId);
         const userId = Number(req.body.userId); // Vem do token do usuário logado
 
-        // Verificar se o usuário já descurtiu o post
-        const existingLike = await db('deslikes').where({ postId, userId }).first();
-        if (existingLike) {
-            return res.status(400).send('O usuário já descurtiu este post.');
-        }
-
+        // Adicionar a descurtida sem verificar se já existe
         await db("deslikes").insert({ postId, userId });
 
-        const post = await db("posts").where({ id: postId }).first();
-        if (!post) {
-            return res.status(404).send("Post não encontrado.");
-        }
-
-        await db("posts").where({ id: postId }).update({ numeroDeslikes: post.numeroDeslikes + 1 });
+        // Atualizar o número de descurtidas no post
+        await db("posts").where({ id: postId }).increment("numeroDeslikes", 1);
 
         res.status(200).send("Post descurtido com sucesso!");
     } catch (error) {
@@ -248,6 +230,7 @@ app.post("/posts/:postId/deslikes", async (req, res) => {
         res.status(500).send("Erro inesperado.");
     }
 });
+
 
 // Obtendo todos os likes
 app.get("/likes", async (req, res) => {
@@ -275,32 +258,36 @@ app.get("/deslikes", async (req, res) => {
 app.post("/posts/:postId/comentarios", async (req, res) => {
     try {
         const postId = Number(req.params.postId);
-        const { texto, usuarioId } = req.body;
+        const { comentario, responsavelId } = req.body;
 
-        if (texto === undefined || usuarioId === undefined) {
-            res.status(400).send("O body precisa ter todos esses atributos: 'texto', 'usuarioId'");
+        if(postId === undefined){
+            res.status(400).send("é necessário identificar o postId")
+            return;
+        }
+        if (comentario === undefined || responsavelId === undefined) {
+            res.status(400).send("O body precisa ter todos esses atributos: 'texto', 'responsavelId'");
             return;
         }
 
-        if (typeof texto !== "string") {
+        if (typeof comentario !== "string") {
             res.status(400).send("O 'texto' do comentário deve ser uma string");
             return;
         }
 
-        if (texto.length < 1) {
+        if (comentario.length < 1) {
             res.status(400).send("O 'texto' do comentário deve conter no mínimo 1 caracter");
             return;
         }
 
-        if (typeof usuarioId !== "number") {
+        if (typeof responsavelId !== "number") {
             res.status(400).send("O 'usuarioId' do comentário deve ser uma 'number'");
             return;
         }
 
         await db("comentarios").insert({
             idPost: postId,
-            texto: texto,
-            usuarioId: usuarioId,
+            comentario: comentario,
+            responsavelId: responsavelId,
             dataCriacao: new Date().toISOString()
         });
 
@@ -312,6 +299,20 @@ app.post("/posts/:postId/comentarios", async (req, res) => {
         res.status(500).send("Erro inesperado.");
     }
 });
+
+// Obtendo todos os comentários de um post específico
+app.get("/posts/:postId/comentarios", async (req, res) => {
+    try {
+        const postId = Number(req.params.postId);
+        const comentarios = await db("comentarios").where({ idPost: postId });
+        res.status(200).send(comentarios);
+    } catch (error) {
+        console.error("Erro:", error);
+        res.status(500).send("Erro inesperado.");
+    }
+});
+
+
 
 // Deletar um comentário
 app.delete("/posts/:postId/comentarios/:comentarioId", async (req, res) => {
