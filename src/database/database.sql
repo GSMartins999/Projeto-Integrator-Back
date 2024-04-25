@@ -130,12 +130,34 @@ CREATE TABLE numComentarios(
 SELECT * FROM numComentarios
 
 
--- Tabela de Ações (likes e deslikes)
-CREATE TABLE actions (
+
+-----------------------------------------------
+
+--Like deslikes comentários:
+
+
+DROP TABLE likesComent;
+
+CREATE TABLE likesComent(
     id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT NOT NULL,
-    postId INTEGER NOT NULL,
-    userId INTEGER NOT NULL,
-    action TEXT NOT NULL,
-    FOREIGN KEY (postId) REFERENCES posts(id),
+    comentarioId INT NOT NULL,
+    userId INT NOT NULL,
+    dataCurtidas TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (comentarioId) REFERENCES comentarios(id),
+    FOREIGN KEY (userId) REFERENCES users(id)
+);
+
+
+
+---------------------------------------------
+DROP TABLE deslikesComent;
+
+
+CREATE TABLE deslikesComent(
+    id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT NOT NULL,
+    comentarioId INT NOT NULL,
+    userId INT NOT NULL,
+    dataCurtidas TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (comentarioId) REFERENCES comentarios(id),
     FOREIGN KEY (userId) REFERENCES users(id)
 );

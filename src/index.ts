@@ -330,3 +330,45 @@ app.delete("/posts/:postId/comentarios/:comentarioId", async (req, res) => {
         res.status(500).send("Erro inesperado.");
     }
 });
+
+
+//Curtindo um comentário de um post:
+app.post("/posts/:postId/comentarios/:comentarioId/likes", async (req, res) => {
+    try {
+        const postId = Number(req.params.postId);
+        const comentarioId = Number(req.params.comentarioId);
+        const userId = Number(req.body.userId); // Vem do token do usuário logado
+
+        // Adicionar a curtida ao comentário
+        await db("likesComent").insert({ comentarioId, userId });
+
+        // Atualizar o número de curtidas do comentário
+        await db("comentarios").where({ id: comentarioId }).increment("numeroCurtidas", 1);
+
+        res.status(200).send("Comentário curtido com sucesso!");
+    } catch (error) {
+        console.error("Erro:", error);
+        res.status(500).send("Erro inesperado.");
+    }
+});
+
+
+//Deslike de um comentário de um post:
+app.post("/posts/:postId/comentarios/:comentarioId/deslikes", async (req, res) => {
+    try {
+        const postId = Number(req.params.postId);
+        const comentarioId = Number(req.params.comentarioId);
+        const userId = Number(req.body.userId);
+
+        // Adicionar a curtida ao comentário
+        await db("deslikesComent").insert({ comentarioId, userId });
+
+        // Atualizar o número de curtidas do comentário
+        await db("comentarios").where({ id: comentarioId }).increment("numeroDeslikes", 1);
+
+        res.status(200).send("Deslike no comentário com sucesso!");
+    } catch (error) {
+        console.error("Erro:", error);
+        res.status(500).send("Erro inesperado.");
+    }
+});
