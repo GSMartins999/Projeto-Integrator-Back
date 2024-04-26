@@ -196,40 +196,59 @@ app.get("/posts", async (req, res) => {
 // Curtir um post
 app.post("/posts/:postId/likes", async (req, res) => {
     try {
-        const postId = Number(req.params.postId);
-        const userId = Number(req.body.userId); // Vem do token do usuário logado
-
-        // Adicionar a curtida sem verificar se já existe
-        await db("likes").insert({ postId, userId });
-
-        // Atualizar o número de curtidas no post
-        await db("posts").where({ id: postId }).increment("numeroCurtidas", 1);
-
-        res.status(200).send("Post curtido com sucesso!");
+      const postId = req.params.postId;
+      const userId = req.body.userId;
+  
+      const postExists: TPosts = await db("posts").where({ id: postId }).first();
+      if (!postExists) {
+        return res.status(404).json({ error: "O post não foi encontrado." });
+      }
+  
+      // Atualizar a tabela likes
+      await db("likes").insert({
+        postId: postId,
+        userId: userId,
+        dataCurtidas: new Date().toISOString()
+      });
+      
+      // Atualizar o número de curtidas no post
+      await db("posts").where({ id: postId }).increment('numeroCurtidas', 1);
+  
+      return res.status(200).json({ message: "Post curtido com sucesso!" });
     } catch (error) {
-        console.error("Erro:", error);
-        res.status(500).send("Erro inesperado.");
+      console.log("Error: ", error);
+      return res.status(500).json({ error: "Erro interno do servidor ao curtir o post." });
     }
-});
+  });
 
-// Descurtir um post
-app.post("/posts/:postId/deslikes", async (req, res) => {
+  
+  // Descurtir um post
+  app.post("/posts/:postId/deslikes", async (req, res) => {
     try {
-        const postId = Number(req.params.postId);
-        const userId = Number(req.body.userId); // Vem do token do usuário logado
-
-        // Adicionar a descurtida sem verificar se já existe
-        await db("deslikes").insert({ postId, userId });
-
-        // Atualizar o número de descurtidas no post
-        await db("posts").where({ id: postId }).increment("numeroDeslikes", 1);
-
-        res.status(200).send("Post descurtido com sucesso!");
+      const postId = req.params.postId;
+      const userId = req.body.userId;
+  
+      const postExists = await db("posts").where({ id: postId }).first();
+      if (!postExists) {
+        return res.status(404).json({ error: "O post não foi encontrado." });
+      }
+  
+      await db("deslikes").insert({
+        postId: postId,
+        userId: userId,
+        dataDescurtidas: new Date().toISOString()
+      });
+      await db("posts").where({ id: postId }).increment('numeroDeslikes', 1);
+  
+      return res.status(200).json({ message: "Post descurtido com sucesso!" });
     } catch (error) {
-        console.error("Erro:", error);
-        res.status(500).send("Erro inesperado.");
+      console.log("Error: ", error);
+      return res.status(500).json({ error: "Erro interno do servidor ao descurtir o post." });
     }
-});
+  });
+  
+
+
 
 
 // Obtendo todos os likes
@@ -370,5 +389,58 @@ app.post("/posts/:postId/comentarios/:comentarioId/deslikes", async (req, res) =
     } catch (error) {
         console.error("Erro:", error);
         res.status(500).send("Erro inesperado.");
+    }
+});
+
+
+// Endpoint para curtir um comentário
+app.post("/comentarios/:comentarioId/likes", async (req, res) => {
+    try {
+        const comentarioId = req.params.comentarioId;
+        const userId = req.body.userId;
+
+        // Verificar se o comentário existe
+        const comentarioExists = await db("comentarios").where({ id: comentarioId }).first();
+        if (!comentarioExists) {
+            return res.status(404).json({ error: "O comentário não foi encontrado." });
+        }
+
+        // Inserir o like na tabela likesComent
+        await db("likesComent").insert({
+            comentarioId: comentarioId,
+            userId: userId,
+            dataCurtidas: new Date().toISOString()
+        });
+
+        return res.status(200).json({ message: "Comentário curtido com sucesso!" });
+    } catch (error) {
+        console.error("Erro:", error);
+        return res.status(500).json({ error: "Erro interno do servidor ao curtir o comentário." });
+    }
+});
+
+// Endpoint para descurtir um comentário
+app.post("/comentarios/:comentarioId/deslikes", async (req, res) => {
+    try {
+        const comentarioId = req.params.comentarioId;
+        const userId = req.body.userId;
+
+        // Verificar se o comentário existe
+        const comentarioExists = await db("comentarios").where({ id: comentarioId }).first();
+        if (!comentarioExists) {
+            return res.status(404).json({ error: "O comentário não foi encontrado." });
+        }
+
+        // Inserir o deslike na tabela deslikesComent
+        await db("deslikesComent").insert({
+            comentarioId: comentarioId,
+            userId: userId,
+            dataCurtidas: new Date().toISOString()
+        });
+
+        return res.status(200).json({ message: "Comentário descurtido com sucesso!" });
+    } catch (error) {
+        console.error("Erro:", error);
+        return res.status(500).json({ error: "Erro interno do servidor ao descurtir o comentário." });
     }
 });
