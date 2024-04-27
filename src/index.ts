@@ -17,7 +17,6 @@ app.get("/ping", (req: Request, res: Response) => {
     res.send("Pong!");
 });
 
-// Função para gerar um token de autenticação
 function generateToken(user: TUser): string {
     const payload = {
         id: user.id,
@@ -40,7 +39,6 @@ async function updateNumComentarios(postId: number) {
 
         const numComentarios = Number(result.count);
 
-        // Atualiza o número de comentários na tabela numComentarios
         await db('numComentarios').update({ quantidade: numComentarios }).where({ idPost: postId });
     } catch (error) {
         console.error('Erro ao atualizar o número de comentários:', error);
@@ -68,7 +66,6 @@ app.post("/login", async (req: Request, res: Response) => {
 
         const token = generateToken(user);
 
-        // Retornar o token para o cliente
         return res.json({ token });
     } catch (error) {
         console.error("Erro ao fazer login:", error);
@@ -166,7 +163,6 @@ app.post("/posts", async (req, res) => {
             return;
         }
 
-        // Insere o novo post na tabela 
         await db("posts").insert({
             description: description,
             responsavelId: responsavelId,
@@ -204,14 +200,12 @@ app.post("/posts/:postId/likes", async (req, res) => {
         return res.status(404).json({ error: "O post não foi encontrado." });
       }
   
-      // Atualizar a tabela likes
       await db("likes").insert({
         postId: postId,
         userId: userId,
         dataCurtidas: new Date().toISOString()
       });
       
-      // Atualizar o número de curtidas no post
       await db("posts").where({ id: postId }).increment('numeroCurtidas', 1);
   
       return res.status(200).json({ message: "Post curtido com sucesso!" });
@@ -249,8 +243,6 @@ app.post("/posts/:postId/likes", async (req, res) => {
   
 
 
-
-
 // Obtendo todos os likes
 app.get("/likes", async (req, res) => {
     try {
@@ -284,7 +276,7 @@ app.post("/posts/:postId/comentarios", async (req, res) => {
             return;
         }
         if (comentario === undefined || responsavelId === undefined) {
-            res.status(400).send("O body precisa ter todos esses atributos: 'texto', 'responsavelId'");
+            res.status(400).send("O body precisa ter todos esses atributos: 'comentario', 'responsavelId'");
             return;
         }
 
@@ -332,36 +324,15 @@ app.get("/posts/:postId/comentarios", async (req, res) => {
 });
 
 
-
-// Deletar um comentário
-app.delete("/posts/:postId/comentarios/:comentarioId", async (req, res) => {
-    try {
-        const postId = Number(req.params.postId);
-        const comentarioId = Number(req.params.comentarioId);
-
-        await db("comentarios").where({ id: comentarioId, idPost: postId }).del();
-
-        await updateNumComentarios(postId);
-
-        res.status(200).send("Comentário deletado com sucesso!");
-    } catch (error) {
-        console.error("Erro:", error);
-        res.status(500).send("Erro inesperado.");
-    }
-});
-
-
 //Curtindo um comentário de um post:
 app.post("/posts/:postId/comentarios/:comentarioId/likes", async (req, res) => {
     try {
         const postId = Number(req.params.postId);
         const comentarioId = Number(req.params.comentarioId);
-        const userId = Number(req.body.userId); // Vem do token do usuário logado
+        const userId = Number(req.body.userId);
 
-        // Adicionar a curtida ao comentário
         await db("likesComent").insert({ comentarioId, userId });
 
-        // Atualizar o número de curtidas do comentário
         await db("comentarios").where({ id: comentarioId }).increment("numeroCurtidas", 1);
 
         res.status(200).send("Comentário curtido com sucesso!");
@@ -379,10 +350,8 @@ app.post("/posts/:postId/comentarios/:comentarioId/deslikes", async (req, res) =
         const comentarioId = Number(req.params.comentarioId);
         const userId = Number(req.body.userId);
 
-        // Adicionar a curtida ao comentário
         await db("deslikesComent").insert({ comentarioId, userId });
 
-        // Atualizar o número de curtidas do comentário
         await db("comentarios").where({ id: comentarioId }).increment("numeroDeslikes", 1);
 
         res.status(200).send("Deslike no comentário com sucesso!");
@@ -399,13 +368,11 @@ app.post("/comentarios/:comentarioId/likes", async (req, res) => {
         const comentarioId = req.params.comentarioId;
         const userId = req.body.userId;
 
-        // Verificar se o comentário existe
         const comentarioExists = await db("comentarios").where({ id: comentarioId }).first();
         if (!comentarioExists) {
             return res.status(404).json({ error: "O comentário não foi encontrado." });
         }
 
-        // Inserir o like na tabela likesComent
         await db("likesComent").insert({
             comentarioId: comentarioId,
             userId: userId,
@@ -419,19 +386,16 @@ app.post("/comentarios/:comentarioId/likes", async (req, res) => {
     }
 });
 
-// Endpoint para descurtir um comentário
 app.post("/comentarios/:comentarioId/deslikes", async (req, res) => {
     try {
         const comentarioId = req.params.comentarioId;
         const userId = req.body.userId;
 
-        // Verificar se o comentário existe
         const comentarioExists = await db("comentarios").where({ id: comentarioId }).first();
         if (!comentarioExists) {
             return res.status(404).json({ error: "O comentário não foi encontrado." });
         }
 
-        // Inserir o deslike na tabela deslikesComent
         await db("deslikesComent").insert({
             comentarioId: comentarioId,
             userId: userId,
@@ -444,3 +408,4 @@ app.post("/comentarios/:comentarioId/deslikes", async (req, res) => {
         return res.status(500).json({ error: "Erro interno do servidor ao descurtir o comentário." });
     }
 });
+
