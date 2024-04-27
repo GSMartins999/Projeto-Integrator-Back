@@ -24,3 +24,6 @@ export type TComentarios = {
     numeroDeslikes?: number,
     dataCriacao: string,
 }
+
+
+
