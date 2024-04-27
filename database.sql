@@ -1,4 +1,4 @@
--- Active: 1713126387827@@127.0.0.1@3306
+-- Active: 1714045392228@@127.0.0.1@3306
 
 -- Criando Tabela de Usuários:
 
@@ -88,11 +88,11 @@ DROP TABLE likes;
 
 CREATE TABLE likes(
     id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT NOT NULL,
-    idPost INT NOT NULL,
-    idUser INT NOT NULL,
-    dataCurtidas TEXT NOT NULL,
-    FOREIGN KEY (idPost) REFERENCES posts(id),
-    FOREIGN KEY (idUser) REFERENCES users(id)
+    postId INT NOT NULL,
+    userId INT NOT NULL,
+    dataCurtidas TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (postId) REFERENCES posts(id),
+    FOREIGN KEY (userId) REFERENCES users(id)
 );
 
 
@@ -103,11 +103,11 @@ DROP TABLE deslikes;
 
 CREATE TABLE deslikes(
     id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT NOT NULL,
-    idPost INT NOT NULL,
-    idUser INT NOT NULL,
-    dataCurtidas TEXT NOT NULL,
-    FOREIGN KEY (idPost) REFERENCES posts(id),
-    FOREIGN KEY (idUser) REFERENCES users(id)
+    postId INT NOT NULL,
+    userId INT NOT NULL,
+    dataDescurtidas TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (postId) REFERENCES posts(id),
+    FOREIGN KEY (userId) REFERENCES users(id)
 );
 
 SELECT * FROM deslikes
@@ -128,3 +128,36 @@ CREATE TABLE numComentarios(
 );
 
 SELECT * FROM numComentarios
+
+
+
+-----------------------------------------------
+
+--Like deslikes comentários:
+
+
+DROP TABLE likesComent;
+
+CREATE TABLE likesComent(
+    id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT NOT NULL,
+    comentarioId INT NOT NULL,
+    userId INT NOT NULL,
+    dataCurtidas TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (comentarioId) REFERENCES comentarios(id),
+    FOREIGN KEY (userId) REFERENCES users(id)
+);
+
+
+
+---------------------------------------------
+DROP TABLE deslikesComent;
+
+
+CREATE TABLE deslikesComent(
+    id INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT NOT NULL,
+    comentarioId INT NOT NULL,
+    userId INT NOT NULL,
+    dataCurtidas TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (comentarioId) REFERENCES comentarios(id),
+    FOREIGN KEY (userId) REFERENCES users(id)
+);
