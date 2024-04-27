@@ -7,12 +7,12 @@
 
 # O projeto devia conter:
 
-- Back-end: 
+[] Back-end: 
 
-- [ ]  Endpoints seguindo as boas práticas HTTP
-- [ ]  Uso do ExpressJS, Typescript e SQLite
-- [ ]  Cobertura de testes (pelo menos 70% da Business)
-- [ ]  API deployada
-- [ ]  Documentação README e POSTMAN
+- [x]  Endpoints seguindo as boas práticas HTTP
+- [x]  Uso do ExpressJS, Typescript e SQLite
+- [x]  Cobertura de testes (pelo menos 70% da Business)
+- [x]  API deployada
+- [x]  Documentação README e POSTMAN
 
 # link do front end do projeto: https://github.com/GSMartins999/Projeto-Integrator-Front.git
