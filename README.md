@@ -7,7 +7,7 @@
 
 # O projeto devia conter:
 
-[] Back-end: 
+[ ] Back-end: 
 
 - [x]  Endpoints seguindo as boas práticas HTTP
 - [x]  Uso do ExpressJS, Typescript e SQLite
